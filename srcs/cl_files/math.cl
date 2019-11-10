@@ -37,3 +37,31 @@ float3		cl_int_to_float3(int i)
 	flt[0] = ((float)((i) & 255)) / 255;
 	return (flt);
 }
+
+int				cl_float3_to_int(float3 i)
+{
+	int			flt;
+
+	flt = (int)i[0] << 16 | (int)i[1] << 8 | (int)i[2];
+	return (flt);
+}
+
+float3		cl_uint4_to_float3(uint4 i)
+{
+	float3		flt;
+
+	flt[0] = (float)i[0] / (float)255;
+	flt[1] = (float)i[1] / (float)255;
+	flt[2] = (float)i[2] / (float)255;
+	return (flt);
+}
+
+float3		cl_float4_to_float3(float4 i)
+{
+	float3		flt;
+
+	flt[0] = i[0];
+	flt[1] = i[1];
+	flt[2] = i[2];
+	return (flt);
+}

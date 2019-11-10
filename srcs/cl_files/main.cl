@@ -1,3 +1,5 @@
+const sampler_t				text_samp = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
+
 #include "kernel.hl"
 #include "random.cl"
 #include "intersect.cl"
@@ -25,7 +27,6 @@ float3 reflect(float3 vector, float3 n)
 
 static void createCamRay(t_scene *scene, t_ray *ray)
 {
-
 	float fx = (float)scene->x_coord / (float)scene->width;
 	float fy = (float)scene->y_coord / (float)scene->height;
 
@@ -182,7 +183,7 @@ static float3 trace(t_scene * scene, t_intersection * intersection)
 
 
 static void scene_new(__global t_obj* objects, int n_objects,\
- int samples, __global ulong * random, __global t_txture *textures, t_cam camera, t_scene *scene, __global t_txture *normals, int lightsampling)
+ int samples, __global ulong * random, image2d_array_t textures, t_cam camera, t_scene *scene, __global t_txture *normals, int lightsampling)
 {
 	scene->objects = objects;
 	scene->n_objects = n_objects;
@@ -199,7 +200,7 @@ static void scene_new(__global t_obj* objects, int n_objects,\
 }
 
 __kernel void render_kernel(__global int *output, __global t_obj *objects,
-__global float3 *vect_temp,  __global ulong * random,  __global t_txture *textures, __global t_txture *normals, int n_objects, int samples, t_cam camera, int lightsampling)
+__global float3 *vect_temp,  __global ulong * random, image2d_array_t textures, __global t_txture *normals, int n_objects, int samples, t_cam camera, int lightsampling)
 {
 
 	t_scene scene;
@@ -215,6 +216,9 @@ __global float3 *vect_temp,  __global ulong * random,  __global t_txture *textur
 		finalcolor += trace(&scene,  &intersection);
 	}
 	vect_temp[scene.x_coord + scene.y_coord * scene.width] = finalcolor;
+	// int2 rese = get_image_dim(textures);
+	// if (get_global_id(0) == 0 && get_global_id(1) == 0)
+	// 	printf("%d %d\n", rese[0], rese[1]);
 	output[scene.x_coord + scene.y_coord * scene.width] = ft_rgb_to_hex(toInt(finalcolor.x  / (float)samples),
 	 toInt(finalcolor.y  / (float)samples), toInt(finalcolor.z  / (float)samples)); /* simple interpolated colour gradient based on pixel coordinates */
 }

@@ -6,7 +6,7 @@
 /*   By: sbrella <sbrella@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/02 15:55:58 by sbrella           #+#    #+#             */
-/*   Updated: 2019/11/07 20:23:00 by sbrella          ###   ########.fr       */
+/*   Updated: 2019/11/08 13:23:23 by sbrella          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,6 @@ void		get_texture(char *name, t_txture *texture, char *path)
 		ft_memcpy(texture->texture, an_surf->pixels, (an_surf->h) * an_surf->pitch);
 	else
 		exit(0);
-	// SDL_FreeSurface(surf);
-	// SDL_FreeSurface(an_surf);
+	SDL_FreeSurface(surf);
+	SDL_FreeSurface(an_surf);
 }

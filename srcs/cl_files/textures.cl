@@ -2,14 +2,12 @@
 
 float3					get_color(t_obj *object, float3 hitpoint, t_scene *scene, float2 *coord)
 {
-	__global t_txture	*texture;
-	int					i;
+	float4				buf;
 
 	if (object->texture > 0)
 	{
-		texture = &((scene->textures)[object->texture - 1]);
-		i = ((int)(coord->y * (float)(texture->height))) * (texture->width) + (int)(coord->x * (float)(texture->width));
-		return(cl_int_to_float3(texture->texture[i]));
+		buf = (float4)(coord->x, coord->y, (float)(object->texture + 1), 0.f);
+		return(cl_float4_to_float3(read_imagef(scene->textures, text_samp, buf)));
 	}
 	else
 		return (object->color);
@@ -18,15 +16,13 @@ float3					get_color(t_obj *object, float3 hitpoint, t_scene *scene, float2 *coo
 float3					global_texture(t_ray *ray, t_scene *scene)
 {
 	float3				vect;
-	__global t_txture	*texture;
 	float				u;
 	float				v;
-	int					i;
+	float4				buf;
 
 	vect = ray->dir;
 	u = 0.5 + (atan2(vect[2], vect[0])) / (2 * PI);
 	v = 0.5 - (asin(vect[1])) / PI;
-	texture = &((scene->textures)[0]);
-	i = ((int)(v * (float)(texture->height - 1))) * (texture->width) + (int)(u * (float)(texture->width - 1));
-	return(cl_int_to_float3(texture->texture[i]));
+	buf = (float4)(u, v, 1.f, 0.f);
+	return(cl_float4_to_float3(read_imagef(scene->textures, text_samp, buf)));
 }

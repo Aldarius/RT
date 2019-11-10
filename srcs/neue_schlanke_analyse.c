@@ -6,7 +6,7 @@
 /*   By: sbrella <sbrella@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/24 17:46:45 by srobert-          #+#    #+#             */
-/*   Updated: 2019/11/07 19:19:59 by sbrella          ###   ########.fr       */
+/*   Updated: 2019/11/08 13:56:15 by sbrella          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -332,8 +332,6 @@ void check_cam(const cJSON *cam, t_game *game)
 	reconfigure_camera(camera);
 	ft_cam_push(game, camera);
 }
-
-
 
 void read_scene(char *argv, t_game *game)
 {

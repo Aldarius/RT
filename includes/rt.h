@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rt.h                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: lminta <lminta@student.42.fr>              +#+  +:+       +#+        */
+/*   By: sbrella <sbrella@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/30 14:49:06 by lminta            #+#    #+#             */
-/*   Updated: 2019/11/07 21:47:06 by lminta           ###   ########.fr       */
+/*   Updated: 2019/11/08 19:09:38 by sbrella          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,7 @@ typedef struct			s_gpu
 	cl_mem				cl_cpu_vectemp;
 	cl_mem				cl_cpu_camera;
 	cl_mem				cl_cpu_random;
+	cl_image			cl_cpu_textures;
 	t_cam				*camera;
 	int					samples;
 }						t_gpu;
