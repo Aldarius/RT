@@ -6,7 +6,7 @@
 /*   By: sbrella <sbrella@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/10/30 14:49:06 by lminta            #+#    #+#             */
-/*   Updated: 2019/11/08 19:09:38 by sbrella          ###   ########.fr       */
+/*   Updated: 2019/11/11 19:23:32 by sbrella          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 # define RT_H
 # define WIN_W 1920
 # define WIN_H 1080
+# define TEXTURE_WIDTH 1920
+# define TEXTURE_HEIGHT 1080
 # define SAMPLES 5
 # define CL_SILENCE_DEPRECATION
 # include <sys/types.h>
@@ -67,9 +69,9 @@ typedef enum			e_figure
 
 typedef struct			s_txture
 {
+	cl_int				texture[TEXTURE_HEIGHT][TEXTURE_WIDTH];
 	cl_int				width;
 	cl_int				height;
-	cl_int				texture[CL_DEVICE_IMAGE2D_MAX_HEIGHT][CL_DEVICE_IMAGE2D_MAX_WIDTH];
 }						t_txture;
 
 typedef struct			s_object

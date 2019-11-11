@@ -50,7 +50,7 @@
             "position": [0.0,-0.5,0.0],
             "color": [0.9,0.8,0.7],
             "dir": [0.0,1.0,0.0],
-            "texture": "ice.jpg"
+            "texture": "179.JPG"
         },
         {
             "type": "plane",

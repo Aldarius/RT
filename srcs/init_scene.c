@@ -6,7 +6,7 @@
 /*   By: sbrella <sbrella@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/23 14:53:01 by lminta            #+#    #+#             */
-/*   Updated: 2019/11/10 14:57:19 by sbrella          ###   ########.fr       */
+/*   Updated: 2019/11/11 21:06:49 by sbrella          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,11 @@ cl_image_desc		create_desc(int num)
 
 	ret.image_type = CL_MEM_OBJECT_IMAGE2D_ARRAY;
 	ret.image_array_size = num;
-	ret.image_height = CL_DEVICE_IMAGE2D_MAX_HEIGHT;
-	ret.image_width = CL_DEVICE_IMAGE2D_MAX_WIDTH;
+	ret.image_height = TEXTURE_HEIGHT;
+	ret.image_width = TEXTURE_WIDTH;
 	ret.image_depth = 1;
-	ret.image_row_pitch = CL_DEVICE_IMAGE2D_MAX_WIDTH;
-	ret.image_slice_pitch = CL_DEVICE_IMAGE2D_MAX_WIDTH * CL_DEVICE_IMAGE2D_MAX_HEIGHT;
+	ret.image_row_pitch = 0;
+	ret.image_slice_pitch = 0;
 	ret.buffer = NULL;
 	ret.num_mip_levels = 0;
 	ret.num_samples = 0;
@@ -85,6 +85,8 @@ void				opencl_init(t_game *game)
 	printf("%s\n", len);
 	game->cl_info->ret = cl_krl_build(game->cl_info,\
 	game->kernels, game->cl_info->krl_names);
+	// clGetProgramBuildInfo(game->cl_info->prog, game->cl_info->dev_id, CL_PROGRAM_BUILD_LOG, sizeof(len), len, NULL);
+	// printf("%s\n", len);
 	ERROR(game->cl_info->ret );
 	// opencl_write_args(game);
 	ERROR(game->cl_info->ret );
@@ -97,7 +99,6 @@ void				opencl(t_game *game, char *argv)
 	ft_memdel((void **)&game->gpu.camera);
 	read_scene(argv, game);
 	game->kernels[0].sizes[1] = sizeof(t_obj) * game->obj_quantity;
-	game->kernels[0].sizes[5] = sizeof(t_txture) * game->normals_num;
 	game->kernels[0].sizes[0] = sizeof(cl_int) * (int)WIN_H * (int)WIN_W;
 	game->kernels[0].sizes[2] = sizeof(cl_float3) * (int)WIN_H * (int)WIN_W;
 	game->kernels[0].sizes[3] = (int)WIN_H * (int)WIN_W * sizeof(cl_ulong);
@@ -109,8 +110,6 @@ void				opencl(t_game *game, char *argv)
 		game->kernels[0].sizes[2], NULL, NULL);
 	game->kernels[0].args[3] = clCreateBuffer(game->cl_info->ctxt, CL_MEM_READ_WRITE,
 		game->kernels[0].sizes[3], NULL, NULL);
-	game->kernels[0].args[5] = clCreateBuffer(game->cl_info->ctxt, CL_MEM_READ_WRITE,
-		game->kernels[0].sizes[5], NULL, NULL);
 	clSetKernelArg(game->kernels[0].krl, 0, sizeof(game->kernels[0].args[0]),
 	(void*)&game->kernels[0].args[0]);
 	clSetKernelArg(game->kernels[0].krl, 2, sizeof(game->kernels[0].args[2]),
@@ -124,19 +123,18 @@ void				opencl(t_game *game, char *argv)
 	game->cl_info->ret = cl_write(game->cl_info, game->kernels[0].args[3],\
 	(int)WIN_H * (int)WIN_W * sizeof(cl_ulong), game->gpu.random);
 	cl_image_format		format = create_format();
-	cl_image_desc		desc = create_desc(game->textures_num);
+	cl_image_desc		desc_textures = create_desc(game->textures_num);
+	cl_image_desc		desc_normals = create_desc(game->normals_num);
 	cl_int				err;
-	game->kernels[0].args[4] = clCreateImage(game->cl_info->ctxt, CL_MEM_READ_WRITE, &format, &desc, NULL, &err);
-	printf("%zu %zu\n", desc.image_row_pitch, desc.image_slice_pitch);
+	game->kernels[0].args[4] = clCreateImage(game->cl_info->ctxt, CL_MEM_READ_ONLY, &format, &desc_textures, NULL, &err);
+	game->kernels[0].args[5] = clCreateImage(game->cl_info->ctxt, CL_MEM_READ_ONLY, &format, &desc_normals, NULL, &err);
+	ERROR(game->cl_info->ret );
+	printf("%zu %zu\n", desc_textures.image_row_pitch, desc_textures.image_slice_pitch);
 	size_t		origin[3] = {0, 0, 0};
-	size_t		region[3] = {CL_DEVICE_IMAGE2D_MAX_WIDTH, CL_DEVICE_IMAGE2D_MAX_HEIGHT, game->textures_num};
-	printf("%p", game->textures);
+	size_t		region_textures[3] = {TEXTURE_WIDTH, TEXTURE_HEIGHT, game->textures_num};
+	size_t		region_normals[3] = {TEXTURE_WIDTH, TEXTURE_HEIGHT, game->normals_num};
 	game->kernels[0].args[1] = clCreateBuffer(game->cl_info->ctxt,\
-	CL_MEM_READ_WRITE, game->kernels[0].sizes[1], NULL, &game->cl_info->ret);
-	// game->kernels[0].args[4] = clCreateBuffer(game->cl_info->ctxt,\
-	// CL_MEM_READ_WRITE, game->kernels[0].sizes[4], NULL, &game->cl_info->ret);
-	game->kernels[0].args[5] = clCreateBuffer(game->cl_info->ctxt,\
-	CL_MEM_READ_WRITE, game->kernels[0].sizes[5], NULL, &game->cl_info->ret);
+	CL_MEM_READ_ONLY, game->kernels[0].sizes[1], NULL, &game->cl_info->ret);
 	clSetKernelArg(game->kernels[0].krl, 1, sizeof(game->kernels[0].args[1]),
 	(void*)&game->kernels[0].args[1]);
 	clSetKernelArg(game->kernels[0].krl, 4, sizeof(game->kernels[0].args[4]),
@@ -146,11 +144,10 @@ void				opencl(t_game *game, char *argv)
 	game->cl_info->ret = cl_write(game->cl_info, game->kernels[0].args[1],\
 	sizeof(t_obj) * game->obj_quantity, game->gpu.objects);
 	game->cl_info->ret = clEnqueueWriteImage(game->cl_info->cmd_queue, game->kernels[0].args[4],
-	CL_TRUE, origin, region, CL_DEVICE_IMAGE2D_MAX_WIDTH, CL_DEVICE_IMAGE2D_MAX_WIDTH * CL_DEVICE_IMAGE2D_MAX_HEIGHT, game->textures, 0, NULL, NULL);
-	// game->cl_info->ret = cl_write(game->cl_info, game->kernels[0].args[4],\
-	// sizeof(t_txture) * game->textures_num, game->textures);
-	game->cl_info->ret = cl_write(game->cl_info, game->kernels[0].args[5],\
-	sizeof(t_txture) * game->normals_num, game->normals);
+	CL_TRUE, origin, region_textures, 0, 0, game->textures, 0, NULL, NULL);
+		ERROR(game->cl_info->ret );
+	game->cl_info->ret = clEnqueueWriteImage(game->cl_info->cmd_queue, game->kernels[0].args[5],
+	CL_TRUE, origin, region_normals, 0, 0, game->normals, 0, NULL, NULL);
 	ERROR(game->cl_info->ret );
 }
 

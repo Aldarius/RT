@@ -1,4 +1,4 @@
-const sampler_t				text_samp = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
+const sampler_t				text_samp = CLK_NORMALIZED_COORDS_TRUE | CLK_ADDRESS_REPEAT | CLK_FILTER_LINEAR;
 
 #include "kernel.hl"
 #include "random.cl"
@@ -116,7 +116,7 @@ static float3		radiance_explicit(t_scene *scene,
 	return (radiance * pdf);
 }
 
-static float3 trace(t_scene * scene, t_intersection * intersection)
+static float3 trace(t_scene * scene, t_intersection * intersection, __read_only image2d_array_t textures, __read_only image2d_array_t normals)
 {
 	t_ray ray = intersection->ray;
 	float2		img_coord;
@@ -128,21 +128,22 @@ static float3 trace(t_scene * scene, t_intersection * intersection)
 	{
 		/* if ray misses scene, return background colour */
 		if (!intersect_scene(scene, intersection, &ray))
-			return accum_color + mask * global_texture(&ray, scene);
+			return accum_color + mask * global_texture(&ray, textures);
 		/* Russian roulette*/
 		// if (bounces > 4 && cl_float3_max(scene->objects[intersection->object_id].color) < rng(scene->random))
 		// 	break;
-
+		// if (length(mask) < 0.001)
+		// 	return (accum_color);
 		t_obj objecthit = scene->objects[intersection->object_id]; /* version with local copy of sphere */
 		/* compute the hitpoint using the ray equation */
 		intersection->hitpoint =  ray.origin + ray.dir * ray.t;
 		if (objecthit.normal || objecthit.texture)
 			interpolate_uv(&objecthit, intersection->hitpoint, scene, &img_coord);
-		objecthit.color = get_color(&objecthit, intersection->hitpoint, scene, &img_coord);
+		objecthit.color = get_color(&objecthit, intersection->hitpoint, textures, &img_coord);
 		if (length(objecthit.emission) != 0.0f && bounces == 0)
 			return (objecthit.color);
 		/* compute the surface normal and flip it if necessary to face the incoming ray */
-		intersection->normal = get_normal(&objecthit, intersection, &img_coord, scene);
+		intersection->normal = get_normal(&objecthit, intersection, &img_coord, normals);
 		intersection->normal = dot(intersection->normal, ray.dir) < 0.0f ? intersection->normal : intersection->normal * (-1.0f);
 		/* create a local orthogonal coordinate frame centered at the hitpoint */
 		float cosine;
@@ -183,7 +184,7 @@ static float3 trace(t_scene * scene, t_intersection * intersection)
 
 
 static void scene_new(__global t_obj* objects, int n_objects,\
- int samples, __global ulong * random, image2d_array_t textures, t_cam camera, t_scene *scene, __global t_txture *normals, int lightsampling)
+ int samples, __global ulong * random, t_cam camera, t_scene *scene, int lightsampling)
 {
 	scene->objects = objects;
 	scene->n_objects = n_objects;
@@ -193,27 +194,25 @@ static void scene_new(__global t_obj* objects, int n_objects,\
 	scene->y_coord = get_global_id(1);
 	scene->samples = samples;
 	scene->random = random;
-	scene->textures = textures;
-	scene->normals = normals;
 	scene->camera = camera;
 	scene->lightsampling = !lightsampling;
 }
 
 __kernel void render_kernel(__global int *output, __global t_obj *objects,
-__global float3 *vect_temp,  __global ulong * random, image2d_array_t textures, __global t_txture *normals, int n_objects, int samples, t_cam camera, int lightsampling)
+__global float3 *vect_temp,  __global ulong * random, __read_only image2d_array_t textures, __read_only image2d_array_t normals, int n_objects, int samples, t_cam camera, int lightsampling)
 {
 
 	t_scene scene;
 	t_intersection  intersection;
 	float3 finalcolor;
-	scene_new(objects, n_objects, samples, random, textures, camera, &scene, normals, lightsampling);
+	scene_new(objects, n_objects, samples, random, camera, &scene, lightsampling);
 	finalcolor = vect_temp[scene.x_coord + scene.y_coord * scene.width];
 	//output[scene.x_coord + scene.y_coord * width] = 0xFF0000;      /* uncomment to test if opencl runs */
 	for (int i = 0; i < SAMPLES; i++)
 	{
 		createCamRay(&scene, &(intersection.ray));
 		intersection_reset(&intersection);
-		finalcolor += trace(&scene,  &intersection);
+		finalcolor += trace(&scene,  &intersection, textures, normals);
 	}
 	vect_temp[scene.x_coord + scene.y_coord * scene.width] = finalcolor;
 	// int2 rese = get_image_dim(textures);

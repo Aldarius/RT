@@ -1,6 +1,8 @@
 
 #ifndef KERNEL_H
 # define KERNEL_H
+# define TEXTURE_WIDTH 1080
+#define TEXTURE_HEIGHT 1920
 
 typedef struct			s_ray
 {
@@ -17,9 +19,9 @@ typedef struct 			s_material
 
 typedef struct s_txture
 {
+	int					texture[TEXTURE_HEIGHT * TEXTURE_WIDTH];
 	int					width;
 	int					height;
-	int					texture[0x1011 * 0x1012];
 }						t_txture;
 
 
@@ -80,7 +82,6 @@ typedef struct						s_scene
 	int								height;
 	int								samples;
 	__global ulong					*random;
-	image2d_array_t					textures;
 	__global t_txture				*normals;
 	t_cam							camera;
 	int								lightsampling;
@@ -90,11 +91,11 @@ float 					cl_float3_max(float3 v);
 float3					cl_int_to_float3(int i);
 float 					cl_float3_min(float3 v);
 float3 					get_normal(t_obj *object, t_intersection *intersection, float2 *coord, t_scene *scene);
-float3					global_texture(t_ray *ray, t_scene *scene);
+float3					global_texture(t_ray *ray, __read_only image2d_array_t textures);
 void 					print_debug(int samples, int width, t_scene *scene);
 void 					print_ray(t_scene *scene, t_ray* ray);
 float3 					reflect(float3 vector, float3 n);
 float3 					refract(float3 vector, float3 n, float refrIndex);
-float3					normal_map(t_obj *object, t_intersection *intersection, float3 normal, float2 *coord, t_scene *scene);
-float3					get_color(t_obj *object, float3 hitpoint, t_scene *scene, float2 *coord);
+float3					normal_map(t_obj *object, t_intersection *intersection, float3 normal, float2 *coord, __read_only image2d_array_t normals);
+float3					get_color(t_obj *object, float3 hitpoint, __read_only image2d_array_t textures, float2 *coord);
 #endif
