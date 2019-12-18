@@ -17,8 +17,8 @@ The final project of the graphic branch of ["School 21"](https://21-school.ru/) 
 * And I [Aldarius](https://github.com/Aldarius) or [lminta](https://profile.intra.42.fr/users/lminta) on intranet. GUI and NET.
 
 ## Screenshots
-<img src = https://github.com/Aldarius/RT/blob/master/screens/screen_1.png>
 <img src = https://github.com/Aldarius/RT/blob/master/screens/screen_2.png>
+<img src = https://github.com/Aldarius/RT/blob/master/screens/screen_1.png>
 <img src = https://github.com/Aldarius/RT/blob/master/screens/screen_3.png>
 <img src = https://github.com/Aldarius/RT/blob/master/screens/screen_4.png>
 <img src = https://github.com/Aldarius/RT/blob/master/screens/screen_5.png>
