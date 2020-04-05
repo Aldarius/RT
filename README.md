@@ -14,7 +14,7 @@ The final project of the graphic branch of ["School 21"](https://21-school.ru/) 
 * [olesgedz](https://github.com/olesgedz) or [jblack-b](https://profile.intra.42.fr/users/jblack-b) on intranet. Intersects.
 * [Wezun4ik](https://github.com/Wezun4ik) or [sbrella](https://profile.intra.42.fr/users/sbrella) on intranet. Textures and normals.
 * [gusario](https://github.com/gusario) or [srobert-](https://profile.intra.42.fr/users/srobert-) on intranet. JSON and .obj parser.
-* And I [Aldarius](https://github.com/Aldarius) or [lminta](https://profile.intra.42.fr/users/lminta) on intranet. GUI and NET.
+* And I [Lminta](https://github.com/Lminta) or [lminta](https://profile.intra.42.fr/users/lminta) on intranet. GUI and NET.
 
 ## Screenshots
 <img src = https://github.com/Aldarius/RT/blob/master/screens/screen_2.png>
